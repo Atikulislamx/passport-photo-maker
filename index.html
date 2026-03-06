@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Passport Photo Maker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <span class="header-icon">📷</span>
+      <h1>Passport Photo Maker</h1>
+      <p class="header-sub">Upload any portrait photo and get a perfect passport photo instantly</p>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- Upload Section -->
+    <section class="card upload-section" id="uploadSection">
+      <h2 class="section-title">Upload Your Photo</h2>
+
+      <div class="drop-zone" id="dropZone" tabindex="0" role="button" aria-label="Click or drag a photo here to upload">
+        <div class="drop-zone-content" id="dropContent">
+          <div class="drop-icon">🖼️</div>
+          <p class="drop-text">Drag &amp; drop your photo here</p>
+          <p class="drop-subtext">or</p>
+          <button class="btn btn-primary" id="browseBtn" type="button">Upload Image</button>
+          <p class="drop-hint">JPG &amp; PNG only · Max 5 MB</p>
+        </div>
+      </div>
+
+      <input type="file" id="fileInput" accept="image/jpeg,image/png" hidden aria-label="File input" />
+
+      <!-- Error banner -->
+      <div class="alert alert-error hidden" id="errorBanner" role="alert">
+        <span class="alert-icon">⚠️</span>
+        <span id="errorText">Something went wrong.</span>
+      </div>
+    </section>
+
+    <!-- Processing / Generate Section -->
+    <section class="card generate-section hidden" id="generateSection">
+      <h2 class="section-title">Preview &amp; Generate</h2>
+
+      <!-- Before / After Previews -->
+      <div class="preview-row">
+        <div class="preview-box">
+          <p class="preview-label">Original</p>
+          <div class="preview-img-wrap" id="originalWrap">
+            <img id="originalPreview" alt="Original photo preview" />
+          </div>
+        </div>
+        <div class="preview-arrow">→</div>
+        <div class="preview-box">
+          <p class="preview-label">Passport Photo</p>
+          <div class="preview-img-wrap passport-frame" id="resultWrap">
+            <canvas id="resultCanvas" width="413" height="531" aria-label="Passport photo result"></canvas>
+            <div class="overlay-placeholder" id="resultPlaceholder">
+              <span>Click "Auto Generate" to process</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generate Button -->
+      <div class="actions-center">
+        <button class="btn btn-primary btn-large" id="generateBtn" type="button">
+          <span class="btn-icon">✨</span> Auto Generate Passport Photo
+        </button>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div class="loading hidden" id="loading">
+        <div class="spinner"></div>
+        <p id="loadingText">Detecting face…</p>
+      </div>
+    </section>
+
+    <!-- Editing Tools -->
+    <section class="card tools-section hidden" id="toolsSection">
+      <h2 class="section-title">Editing Tools</h2>
+      <div class="tools-grid">
+
+        <div class="tool-group">
+          <label for="brightnessRange" class="tool-label">Brightness</label>
+          <input type="range" id="brightnessRange" class="slider" min="-100" max="100" value="0" aria-label="Brightness" />
+          <span class="slider-value" id="brightnessVal">0</span>
+        </div>
+
+        <div class="tool-group">
+          <label for="contrastRange" class="tool-label">Contrast</label>
+          <input type="range" id="contrastRange" class="slider" min="-100" max="100" value="0" aria-label="Contrast" />
+          <span class="slider-value" id="contrastVal">0</span>
+        </div>
+
+        <div class="tool-group">
+          <label for="sharpnessRange" class="tool-label">Sharpness</label>
+          <input type="range" id="sharpnessRange" class="slider" min="0" max="10" value="0" step="1" aria-label="Sharpness" />
+          <span class="slider-value" id="sharpnessVal">0</span>
+        </div>
+
+        <div class="tool-group">
+          <label class="tool-label">Background Color</label>
+          <div class="bg-color-group">
+            <button class="bg-btn active" data-color="white" title="White" style="background:#ffffff;" aria-label="White background"></button>
+            <button class="bg-btn" data-color="lightgray" title="Light Gray" style="background:#e8e8e8;" aria-label="Light gray background"></button>
+            <button class="bg-btn" data-color="lightblue" title="Light Blue" style="background:#c8d8f0;" aria-label="Light blue background"></button>
+            <button class="bg-btn custom-bg-btn" data-color="custom" title="Custom color" aria-label="Custom background color">
+              <input type="color" id="customBgColor" value="#ffffff" aria-label="Custom background color picker" />
+            </button>
+          </div>
+        </div>
+
+        <div class="tool-group full-width">
+          <button class="btn btn-secondary" id="autoAlignBtn" type="button">
+            <span>🎯</span> Auto Align &amp; Reset
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Download Section -->
+    <section class="card download-section hidden" id="downloadSection">
+      <h2 class="section-title">Download</h2>
+      <p class="download-info">Passport size: 35mm × 45mm (413 × 531 px at 300 dpi)</p>
+      <div class="download-buttons">
+        <button class="btn btn-success" id="downloadSingleBtn" type="button">
+          <span>⬇️</span> Download Single Photo
+        </button>
+        <button class="btn btn-success btn-outline" id="downloadSheetBtn" type="button">
+          <span>🖨️</span> Download 4× Print Sheet
+        </button>
+      </div>
+
+      <!-- 4-up sheet preview (hidden canvas) -->
+      <canvas id="sheetCanvas" hidden aria-label="4-up print sheet canvas"></canvas>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>Passport Photo Maker &mdash; All processing is done locally in your browser. No data is uploaded.</p>
+  </footer>
+
+  <!-- face-api.js from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
